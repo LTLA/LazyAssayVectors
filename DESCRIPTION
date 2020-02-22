@@ -1,0 +1,23 @@
+Package: LazyAssayVectors
+Type: Package
+Authors@R: c(person("Aaron", "Lun", role = c("aut", "cre"), email="infinite.monkeys.with.keyboards@gmail.com"))
+Version: 0.98.0
+Date: 2020-02-22
+License: GPL-3
+Title: Lazy Assay Vectors
+Description: Implements ALTREP vectors for lazily materializing rows or columns
+    from a matrix. This allows users to represent large matrices of various 
+    classes as dataframes for use in ggplot2 and other frameworks.
+Imports:    
+    Rcpp,
+    Matrix
+Suggests: 
+    BiocStyle, 
+    knitr,
+    testthat,
+    rmarkdown
+VignetteBuilder: knitr
+biocViews: Infrastructure, DataRepresentation, DataImport
+LinkingTo: Rcpp
+SystemRequirements: C++11
+RoxygenNote: 7.0.2
