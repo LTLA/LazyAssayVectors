@@ -28,3 +28,11 @@
         logical=2L,
         default=-1L)
 }
+
+.launch_process <- function() {
+    candidate <- tempfile()
+    dir.create(candidate)
+    rscript <- file.path(R.home("bin"), "Rscript")
+    system2(rscript, c("-e", "'LazyAssayVectors:::slaveLoop()'", shQuote(candidate)), wait=FALSE)
+    candidate
+}
