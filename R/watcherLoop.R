@@ -1,9 +1,9 @@
-slaveContents  <- new.env()
-slaveContents$collection <- list()
+watcherContents  <- new.env()
+watcherContents$collection <- list()
 
-slaveLoop <- function(dir=commandArgs(trailingOnly=TRUE)) {
-    # Much of this is copied from parallel:::.slavePSOCK or
-    # parallel:::slaveLoop.
+watcherLoop <- function(dir=commandArgs(trailingOnly=TRUE)) {
+    # Much of this is copied from parallel:::.watcherPSOCK or
+    # parallel:::watcherLoop.
     repeat tryCatch({
         delay <- 0.1
         counter <- 1L
@@ -33,7 +33,7 @@ slaveLoop <- function(dir=commandArgs(trailingOnly=TRUE)) {
             id <- sub("\\.rds$", "", x)
             full <- file.path(dir, x)
             curmat <- readRDS(full)
-            slaveContents$collection[[id]] <- curmat
+            watcherContents$collection[[id]] <- curmat
 
             pkg <- attr(class(curmat), "package")
             if (!is.null(pkg)) {
@@ -46,7 +46,7 @@ slaveLoop <- function(dir=commandArgs(trailingOnly=TRUE)) {
         ins <- all.files[grep("\\.in$", all.files)]
         for (x in ins) {
             id <- sub("\\.in$", "", x)
-            curmat <- slaveContents$collection[[id]]
+            curmat <- watcherContents$collection[[id]]
             full <- file.path(dir, x)
 
             codes <- readBin(full, integer(), 2)
