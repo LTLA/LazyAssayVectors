@@ -11,14 +11,14 @@ lazyRegistry <- new.env()
 #' To save time, no action will be performed if \code{x} was the same as the last transferred object,
 #' based on the last transferred entity in \code{lazyRegistry}.
 #'
-#' @return String containing the identifier for the transferred matrix.
+#' @return String containing the file prefix corresponding to the transferred matrix.
 #' This will be used by ALTREP methods to retrieve the results of subsetting.
 #'
 #' @author Aaron Lun
 #'
 #' @rdname INTERNAL_saveOtherMatrix
 saveOtherMatrix <- function(x) {
-    candidate <- .getWatcherLocation(start=TRUE)
+    candidate <- getWatcherLocation(start=TRUE)
 
     # Avoids constantly resaving and reloading objects 
     # if we're making lots of queries to the same thing.
@@ -34,5 +34,5 @@ saveOtherMatrix <- function(x) {
         lazyRegistry$lastID <- ID
     }
 
-    ID
+    file.path(candidate, ID)
 }

@@ -4,7 +4,8 @@ startWatcher <- function() {
     dir.create(candidate)
 
     rscript <- file.path(R.home("bin"), "Rscript")
-    system2(rscript, c("-e", "'LazyAssayVectors:::watcherLoop()'", shQuote(candidate)), wait=FALSE)
+    system2(rscript, c("-e", "'LazyAssayVectors:::watcherLoop()'", shQuote(candidate)), 
+        stdout=FALSE, stderr=FALSE, wait=FALSE)
     candidate
 }
 

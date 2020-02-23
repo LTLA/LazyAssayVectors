@@ -65,7 +65,7 @@ watcherLoop <- function(dir=commandArgs(trailingOnly=TRUE)) {
                 return(invisible(NULL))
             }
 
-            all.files <- list.files(pattern="\\.(in|rds)$", recursive=TRUE)
+            all.files <- list.files(dir, pattern="\\.(in|rds)$", recursive=TRUE)
             if (length(all.files)) {
                 break
             }

@@ -10,4 +10,8 @@ createLazyRows <- function(x) {
         assay_vals[[i]] <- FUN(i)
     }
     names(assay_vals) <- rownames(x)
+
+    class(assay_vals) <- "data.frame"
+    row.names(assay_vals) <- colnames(x)
+    assay_vals
 }

@@ -18,9 +18,9 @@
 
         # Yes, we are replacing the matrix with a list of stuff!
         # This will be used for retrieval in the ALTREP method.
-        # We add a 5 second time-out limit for retrieval; beyond
+        # We add a time-out limit for retrieval; beyond
         # that, we assume that the process died somewhere.
-        x <- list(location=saveOther(x), timeout=5)
+        x <- list(location=saveOtherMatrix(x), timeout=10)
     }
 
     function(i) {
