@@ -14,7 +14,7 @@
 #' Users should generally not call this function directly,
 #' rather it is a utility that is most typically used by other functions.
 #' This is because direct use of the output data.frame requires some care to avoid unintended materialization,
-#' see \code{?"\link{Using lazy vectors}"} for more details.
+#' see \code{?"\link{Using-lazy-vectors}"} for more details.
 #'
 #' @examples
 #' # Creating a large sparse matrix:
@@ -24,7 +24,7 @@
 #'
 #' # This does not collapse sparsity:
 #' df <- createLazyColumns(y)
-#' summary(df$Cell_05)
+#' summary(df$Cell_5)
 #' 
 #' @export
 createLazyColumns <- function(x) {
