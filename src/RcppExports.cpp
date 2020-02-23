@@ -5,6 +5,16 @@
 
 using namespace Rcpp;
 
+// check_lazy_vectors
+SEXP check_lazy_vectors(Rcpp::List incoming);
+RcppExport SEXP _LazyAssayVectors_check_lazy_vectors(SEXP incomingSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type incoming(incomingSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_lazy_vectors(incoming));
+    return rcpp_result_gen;
+END_RCPP
+}
 // create_lazy_vector
 SEXP create_lazy_vector(SEXP mat, SEXP dim, SEXP idx, bool getcol, int matclass, int type);
 RcppExport SEXP _LazyAssayVectors_create_lazy_vector(SEXP matSEXP, SEXP dimSEXP, SEXP idxSEXP, SEXP getcolSEXP, SEXP matclassSEXP, SEXP typeSEXP) {
@@ -22,6 +32,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_LazyAssayVectors_check_lazy_vectors", (DL_FUNC) &_LazyAssayVectors_check_lazy_vectors, 1},
     {"_LazyAssayVectors_create_lazy_vector", (DL_FUNC) &_LazyAssayVectors_create_lazy_vector, 6},
     {NULL, NULL, 0}
 };
