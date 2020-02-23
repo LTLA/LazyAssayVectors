@@ -1,0 +1,5 @@
+man/INTERNAL_*
+src/*.o
+src/*.so
+*.swp
+
