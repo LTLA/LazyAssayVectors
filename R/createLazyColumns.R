@@ -37,6 +37,11 @@ createLazyColumns <- function(x) {
     names(assay_vals) <- colnames(x)
 
     class(assay_vals) <- "data.frame"
-    row.names(assay_vals) <- rownames(x)
+    row.names(assay_vals) <- if (!is.null(rownames(x))) {
+        rownames(x)
+    } else {
+        seq_len(nrow(x))
+    }
+
     assay_vals
 }
