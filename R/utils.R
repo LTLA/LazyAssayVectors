@@ -1,5 +1,8 @@
 #' @importClassesFrom Matrix dgCMatrix lgCMatrix
 .make_lazy_function <- function(x, getcol) {
+    d <- dim(x)
+    force(getcol)
+    
     if (is.matrix(x)) {
         matclass <- 0L
         type <- .pack_to_type(x)
@@ -12,10 +15,14 @@
     } else {
         matclass <- 2L
         type <- .pack_to_type(as.matrix(x[0,0]))
+
+        # Yes, we are replacing the matrix with a list of stuff!
+        # This will be used for retrieval in the ALTREP method.
+        # We add a 5 second time-out limit for retrieval; beyond
+        # that, we assume that the process died somewhere.
+        x <- list(location=saveOther(x), timeout=5)
     }
 
-    d <- dim(x)
-    force(getcol)
     function(i) {
         create_lazy_vector(x, d, i-1L, getcol=getcol, matclass=matclass, type=type)
     }
@@ -27,12 +34,4 @@
         double=1L,
         logical=2L,
         default=-1L)
-}
-
-.launch_process <- function() {
-    candidate <- tempfile()
-    dir.create(candidate)
-    rscript <- file.path(R.home("bin"), "Rscript")
-    system2(rscript, c("-e", "'LazyAssayVectors:::slaveLoop()'", shQuote(candidate)), wait=FALSE)
-    candidate
 }
