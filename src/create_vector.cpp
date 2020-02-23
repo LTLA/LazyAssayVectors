@@ -1,18 +1,12 @@
 #include "Rcpp.h"
 #include "R.h"
-#include <R_ext/Rdynload.h>
-
-#define class klass
-
-extern "C" {
+#include "R_ext/Rdynload.h"
 #include "R_ext/Altrep.h"
-}
 
-#undef klass
-
-#include "grabber.h"
+#include "sparse_grabber.h"
+#include "ordinary_grabber.h"
+#include "other_grabber.h"
 #include "lazy_methods.h"
-#include <stdexcept>
 
 /***************************************************/
 
@@ -71,6 +65,18 @@ typedef sparse_grabber<true, Rcpp::LogicalVector> sparse_lgl_col_grabber;
 
 typedef sparse_grabber<false, Rcpp::LogicalVector> sparse_lgl_row_grabber;
 
+typedef other_grabber<true, int, INTSXP> other_int_col_grabber;
+
+typedef other_grabber<false, int, INTSXP> other_int_row_grabber;
+
+typedef other_grabber<true, double, REALSXP> other_dbl_col_grabber;
+
+typedef other_grabber<false, double, REALSXP> other_dbl_row_grabber;
+
+typedef other_grabber<true, int, LGLSXP> other_lgl_col_grabber;
+
+typedef other_grabber<false, int, LGLSXP> other_lgl_row_grabber;
+
 /***************************************************/
 
 typedef lazy_vector_methods<ordinary_int_col_grabber> lazy_ordinary_int_col_methods;
@@ -93,6 +99,18 @@ typedef lazy_vector_methods<sparse_lgl_col_grabber> lazy_sparse_lgl_col_methods;
 
 typedef lazy_vector_methods<sparse_lgl_row_grabber> lazy_sparse_lgl_row_methods;
 
+typedef lazy_vector_methods<other_int_col_grabber> lazy_other_int_col_methods;
+
+typedef lazy_vector_methods<other_int_row_grabber> lazy_other_int_row_methods;
+
+typedef lazy_vector_methods<other_dbl_col_grabber> lazy_other_dbl_col_methods;
+
+typedef lazy_vector_methods<other_dbl_row_grabber> lazy_other_dbl_row_methods;
+
+typedef lazy_vector_methods<other_lgl_col_grabber> lazy_other_lgl_col_methods;
+
+typedef lazy_vector_methods<other_lgl_row_grabber> lazy_other_lgl_row_methods;
+
 /***************************************************/
 
 R_altrep_class_t lazy_ordinary_int_col_t;
@@ -101,10 +119,18 @@ R_altrep_class_t lazy_ordinary_dbl_col_t;
 R_altrep_class_t lazy_ordinary_dbl_row_t;
 R_altrep_class_t lazy_ordinary_lgl_col_t;
 R_altrep_class_t lazy_ordinary_lgl_row_t;
+
 R_altrep_class_t lazy_sparse_dbl_col_t;
 R_altrep_class_t lazy_sparse_dbl_row_t;
 R_altrep_class_t lazy_sparse_lgl_col_t;
 R_altrep_class_t lazy_sparse_lgl_row_t;
+
+R_altrep_class_t lazy_other_int_col_t;
+R_altrep_class_t lazy_other_int_row_t;
+R_altrep_class_t lazy_other_dbl_col_t;
+R_altrep_class_t lazy_other_dbl_row_t;
+R_altrep_class_t lazy_other_lgl_col_t;
+R_altrep_class_t lazy_other_lgl_row_t;
 
 // [[Rcpp::init]]
 void init_lazy_vector(DllInfo* dll){
@@ -149,6 +175,31 @@ void init_lazy_vector(DllInfo* dll){
     lazy_sparse_lgl_row_t = R_make_altreal_class("lazy_sparse_lgl_row", "scater", dll);
     lazy_sparse_lgl_row_methods::partial_Init(&lazy_sparse_lgl_row_t);
     remaining_lgl_Init<lazy_sparse_lgl_row_methods>(&lazy_sparse_lgl_row_t);
+
+    // Other methods.
+    lazy_other_int_col_t = R_make_altinteger_class("lazy_other_int_col", "scater", dll);
+    lazy_other_int_col_methods::partial_Init(&lazy_other_int_col_t);
+    remaining_int_Init<lazy_other_int_col_methods>(&lazy_other_int_col_t);
+
+    lazy_other_int_row_t = R_make_altinteger_class("lazy_other_int_row", "scater", dll);
+    lazy_other_int_row_methods::partial_Init(&lazy_other_int_row_t);
+    remaining_int_Init<lazy_other_int_row_methods>(&lazy_other_int_row_t);
+
+    lazy_other_dbl_col_t = R_make_altreal_class("lazy_other_dbl_col", "scater", dll);
+    lazy_other_dbl_col_methods::partial_Init(&lazy_other_dbl_col_t);
+    remaining_dbl_Init<lazy_other_dbl_col_methods>(&lazy_other_dbl_col_t);
+
+    lazy_other_dbl_row_t = R_make_altreal_class("lazy_other_dbl_row", "scater", dll);
+    lazy_other_dbl_row_methods::partial_Init(&lazy_other_dbl_row_t);
+    remaining_dbl_Init<lazy_other_dbl_row_methods>(&lazy_other_dbl_row_t);
+
+    lazy_other_lgl_col_t = R_make_altreal_class("lazy_other_lgl_col", "scater", dll);
+    lazy_other_lgl_col_methods::partial_Init(&lazy_other_lgl_col_t);
+    remaining_lgl_Init<lazy_other_lgl_col_methods>(&lazy_other_lgl_col_t);
+
+    lazy_other_lgl_row_t = R_make_altreal_class("lazy_other_lgl_row", "scater", dll);
+    lazy_other_lgl_row_methods::partial_Init(&lazy_other_lgl_row_t);
+    remaining_lgl_Init<lazy_other_lgl_row_methods>(&lazy_other_lgl_row_t);
 }
 
 // [[Rcpp::export(rng=false)]]
@@ -156,12 +207,12 @@ SEXP create_lazy_vector(SEXP mat, SEXP dim, SEXP idx, bool getcol, int matclass,
     /*
      * matclass = 0 is an ordinary matrix.
      * matclass = 1 is a dgCMatrix or lgCMatrix.
-     * matclass = 2 is anything else.
+     * matclass = 2 is any other matrix.
      *
      * type = 0 is integer.
      * type = 1 is double.
      * type = 2 is logical.
-     * type = -1 is anything else.
+     * type = -1 is some unknown type.
      */
 
     if (matclass==0) {
@@ -199,6 +250,28 @@ SEXP create_lazy_vector(SEXP mat, SEXP dim, SEXP idx, bool getcol, int matclass,
                 return Make(&lazy_sparse_lgl_row_t, mat, dim, idx);
             }
         }
+
+    } else if (matclass==2) {
+        if (type==0) {
+            if (getcol) {
+                return Make(&lazy_other_int_col_t, mat, dim, idx);
+            } else {
+                return Make(&lazy_other_int_row_t, mat, dim, idx);
+            }
+        } else if (type==1) {
+            if (getcol) {
+                return Make(&lazy_other_dbl_col_t, mat, dim, idx);
+            } else {
+                return Make(&lazy_other_dbl_row_t, mat, dim, idx);
+            }
+        } else if (type==2) {
+            if (getcol) {
+                return Make(&lazy_other_lgl_col_t, mat, dim, idx);
+            } else {
+                return Make(&lazy_other_lgl_row_t, mat, dim, idx);
+            }
+        }
     }
+
     throw std::runtime_error("lazy vectors not supported for this assay");
 }
