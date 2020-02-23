@@ -15,7 +15,8 @@ Suggests:
     BiocStyle, 
     knitr,
     testthat,
-    rmarkdown
+    rmarkdown,
+    TENxBrainData
 VignetteBuilder: knitr
 biocViews: Infrastructure, DataRepresentation, DataImport
 LinkingTo: Rcpp

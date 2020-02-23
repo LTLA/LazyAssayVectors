@@ -1,0 +1,115 @@
+---
+title: Lazily materializing assay rows or columns
+author:
+- name: Aaron Lun
+  email: infinite.monkeys.with.keyboards@gmail.com
+date: "Revised: February 22, 2019"
+output:
+  BiocStyle::html_document
+package: LazyAssayVectors
+vignette: >
+  %\VignetteIndexEntry{Lazy assay vectors}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
+```
+
+# Motivation
+
+The `r Biocpkg("LazyAssayVectors")` package allows users and package developers to represent an assay matrix as a `data.frame` of lazily materialized vectors.
+This is occasionally useful for efficient integration with ecosystems that expect `data.frame`s, the most obvious being `r CRANpkg("ggplot2")`.
+Consider this very large matrix:
+
+```{r}
+library(Matrix)
+y <- rsparsematrix(1e6, 1e6, density=0.0000001)
+rownames(y) <- sprintf("Gene_%i", seq_len(nrow(y)))
+```
+
+Let's say that we want to represent it as a `data.frame` of column vectors.
+The theoretical size of such a `data.fram` easily exceeds the available memory on most machines,
+yet here we are:
+
+```{r}
+library(LazyAssayVectors)
+df <- createLazyRows(y)
+object.size(df)
+```
+
+And why would we want to represent it as a `data.frame`?
+Well, it allows us to do stuff like the following:
+
+```{r, fig.show="hide"}
+library(ggplot2)
+ggplot(df) + geom_point(aes(x=Gene_2, y=Gene_1))
+```
+
+The key aspect of this is that _everything_ from `y` is available in the `df` and can be used by downstream methods -
+in this case, the various `geom`s and `stat`s.
+We do not have to extract out `Gene_1` and `Gene_2` from `y` to put in `df` and then specify `Gene_1` and `Gene_2` **again** in the layers; rather, a single specification is sufficient, which makes it easier to rapidly write `r Biocpkg("ggplot")` code.
+This applies to any function that expects a `data.frame` as input:
+
+```{r}
+design <- model.matrix(~Gene_10000, data=df)
+dim(design)
+```
+
+# Supported matrix representations
+
+Every matrix representation is supported provided it yields numeric, integer or logical values upon `[`.
+Let's demonstrate with some file-backed matrices from the `r Biocpkg("HDF5Array")` package.
+
+```{r}
+library(TENxBrainData)
+sce <- TENxBrainData()
+dim(sce)
+```
+
+In this case, we'll work with the counts and create a column-wise `data.frame`.
+Again, we can trick R into loading an object that is much bigger than the available RAM (at least on my machine).
+
+```{r}
+df <- createLazyColumns(counts(sce))
+object.size(df)
+```
+
+We are able to extract columns in the `data.frame`, which triggers lazy materialization from the underlying `HDF5Matrix`.
+It must be said, though, that this is a fair bit slower than our previous example due to the delay in reading from file.
+
+```{r}
+summary(df[,1])
+```
+
+On rare occasions, you may see a timeout warning that will instruct you to run `restartWatcher()`.
+This will restart the watcher process that actually handles data reading from file.
+
+# Caveats on laziness
+
+Lazily materialized vectors are powerful as we can effectively extend any vector-ingesting function to work on large datasets.
+However, as Superman once said, with great power comes great responsibility.
+In particular, users of lazy vectors have to take care to avoid inadvertently materializing the entirety of the `data.frame`,
+which is surprisingly common with operations like subsetting.
+This often requires some protection to be placed around the lazy vectors to avoid unintended materialization by end-users;
+for example, the `ggcells()` function from `r Biocpkg("scater")` makes it harder to directly manipulate the `data.frame` by wrapping it in a `ggplot()` call.
+
+<!--
+If you wanted to file a PR about it being Uncle Ben who said it, you've already
+fallen into my trap. Defeat, like coffee, is best served bitter.
+-->
+
+Another materialization trigger occurs when lazy vectors are saved,
+either by explicitly by `saveRDS()` or implicitly by `save()` (and higher-level functions like `r CRANpkg("knitr")`'s caching).
+To avoid this, we provide the `dropLazyColumns()` function to remove all non-materialized lazy assay vectors from a `data.frame`.
+This allows us to conveniently operate on the `data.frame` as usual and,
+once we are finished, we can simply drop all unused columns to obtain a slimmer object for saving.
+Again, it is unlikely that end-users will call `dropLazyColumns()` directly;
+rather, it will be called by other functions to ensure that any user-exposed objects are cut down to size.
+
+# Session information
+
+```{r}
+sessionInfo()
+```
