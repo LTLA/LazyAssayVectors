@@ -20,14 +20,18 @@ lazyRegistry <- new.env()
 saveOtherMatrix <- function(x) {
     candidate <- getWatcherLocation(start=TRUE)
 
-    # Avoids constantly resaving and reloading objects 
-    # if we're making lots of queries to the same thing.
     lastObject <- lazyRegistry$lastObject
     if (identical(x, lastObject)) {
+        # Avoids constantly resaving and reloading objects 
+        # if we're making lots of queries to the same thing.
         ID <- lazyRegistry$lastID
     } else {
+        # Save it to a tempfile first so that the watcher doesn't 
+        # try to load in a half-written RDS file.
+        tmp <- tempfile()
+        saveRDS(x, tmp)
         ID0 <- tempfile(tmpdir=candidate)
-        saveRDS(x, paste0(ID0, ".rds"))
+        file.rename(tmp, paste0(ID0, ".rds"))
         ID <- basename(ID0)
 
         lazyRegistry$lastObject <- x

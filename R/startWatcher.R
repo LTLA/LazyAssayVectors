@@ -10,7 +10,7 @@ startWatcher <- function() {
 }
 
 stopWatcher <- function() {
-    unlink(watchedValues$location, recursive=TRUE)
+    unlink(lazyRegistry$location, recursive=TRUE)
     invisible(NULL)
 }
 

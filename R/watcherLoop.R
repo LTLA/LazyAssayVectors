@@ -74,9 +74,10 @@ watcherLoop <- function(dir=commandArgs(trailingOnly=TRUE)) {
             # the delay is bumped up to 1 second; this gets reset whenever
             # we do see a change.
             Sys.sleep(delay)
-            counter <- counter + 1L
             if (counter*delay > 30) {
                 delay <- 1
+            } else {
+                counter <- counter + 1L
             }
         }
 
