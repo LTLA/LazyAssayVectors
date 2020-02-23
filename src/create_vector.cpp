@@ -7,6 +7,7 @@
 #include "ordinary_grabber.h"
 #include "other_grabber.h"
 #include "lazy_methods.h"
+#include "altrep_classes.h"
 
 /***************************************************/
 

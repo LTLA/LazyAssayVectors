@@ -1,0 +1,23 @@
+#ifndef CLASSES_H
+#define CLASSES_H
+
+extern R_altrep_class_t lazy_ordinary_int_col_t;
+extern R_altrep_class_t lazy_ordinary_int_row_t;
+extern R_altrep_class_t lazy_ordinary_dbl_col_t;
+extern R_altrep_class_t lazy_ordinary_dbl_row_t;
+extern R_altrep_class_t lazy_ordinary_lgl_col_t;
+extern R_altrep_class_t lazy_ordinary_lgl_row_t;
+
+extern R_altrep_class_t lazy_sparse_dbl_col_t;
+extern R_altrep_class_t lazy_sparse_dbl_row_t;
+extern R_altrep_class_t lazy_sparse_lgl_col_t;
+extern R_altrep_class_t lazy_sparse_lgl_row_t;
+
+extern R_altrep_class_t lazy_other_int_col_t;
+extern R_altrep_class_t lazy_other_int_row_t;
+extern R_altrep_class_t lazy_other_dbl_col_t;
+extern R_altrep_class_t lazy_other_dbl_row_t;
+extern R_altrep_class_t lazy_other_lgl_col_t;
+extern R_altrep_class_t lazy_other_lgl_row_t;
+
+#endif
